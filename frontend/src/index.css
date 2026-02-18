@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #F9FAFB;
+  color: #000000;
+  min-height: 100vh;
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 ease-in-out;
+  }
+  
+  .btn-primary {
+    @apply bg-black text-white hover:bg-gray-800 active:scale-95;
+  }
+  
+  .btn-secondary {
+    @apply bg-white border-2 border-black text-black hover:bg-gray-50 active:scale-95;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-200;
+  }
+  
+  .card:hover {
+    @apply shadow-md transform -translate-y-1;
+  }
+  
+  .input {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200;
+  }
+  
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
+  
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out;
+}
