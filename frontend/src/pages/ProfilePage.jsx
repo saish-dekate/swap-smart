@@ -4,6 +4,14 @@ import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../api';
 import { ArrowLeft, Upload, Camera } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL || '/api';
+
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return null;
+  if (imagePath.startsWith('http')) return imagePath;
+  return imagePath;
+};
+
 export default function ProfilePage() {
   const { user, updateUser } = useAuth();
   const navigate = useNavigate();
@@ -20,7 +28,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (user?.avatar) {
-      setAvatarPreview(user.avatar);
+      setAvatarPreview(getImageUrl(user.avatar));
     }
   }, [user]);
 

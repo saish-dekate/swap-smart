@@ -4,6 +4,14 @@ import { useAuth } from '../context/AuthContext';
 import { productsAPI, swapsAPI, bidsAPI, matchingAPI } from '../api';
 import { Package, RefreshCw, DollarSign, Bell, Sparkles, Trash2, ToggleLeft, ToggleRight, MapPin, Star, MessageCircle } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL || '/api';
+
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return 'https://via.placeholder.com/300x200?text=No+Image';
+  if (imagePath.startsWith('http')) return imagePath;
+  return imagePath;
+};
+
 const conditionColors = {
   new: 'bg-green-100 text-green-800',
   like_new: 'bg-blue-100 text-blue-800',
@@ -13,7 +21,7 @@ const conditionColors = {
 };
 
 function MyProductCard({ product, onDelete, onToggleStatus, refreshProducts }) {
-  const imageUrl = product.primary_image || 'https://via.placeholder.com/300x200?text=No+Image';
+  const imageUrl = getImageUrl(product.primary_image);
 
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this product?')) {

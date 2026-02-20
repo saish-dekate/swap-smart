@@ -43,18 +43,18 @@ api.interceptors.response.use(
 );
 
 export const authAPI = {
-  register: (data) => api.post('/auth/register/', data),
-  login: (data) => api.post('/auth/login/', data),
-  me: () => api.get('/users/me/'),
+  register: (data) => api.post('/auth/auth/register/', data),
+  login: (data) => api.post('/auth/auth/login/', data),
+  me: () => api.get('/auth/users/me/'),
   updateProfile: (data) => {
     if (data instanceof FormData) {
-      return api.patch('/users/update_profile/', data, {
+      return api.patch('/auth/users/update_profile/', data, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
     }
-    return api.patch('/users/update_profile/', data);
+    return api.patch('/auth/users/update_profile/', data);
   },
-  notifications: () => api.get('/users/notifications/'),
+  notifications: () => api.get('/auth/users/notifications/'),
 };
 
 export const productsAPI = {

@@ -4,6 +4,14 @@ import { productsAPI, swapsAPI, bidsAPI, matchingAPI, reviewsAPI } from '../api'
 import { useAuth } from '../context/AuthContext';
 import { MapPin, Star, MessageCircle, RefreshCw, DollarSign, ArrowLeft, Shield, Calendar, Award } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL || '/api';
+
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return 'https://via.placeholder.com/600x400';
+  if (imagePath.startsWith('http')) return imagePath;
+  return imagePath;
+};
+
 const conditionColors = {
   new: 'bg-green-100 text-green-800',
   like_new: 'bg-blue-100 text-blue-800',
@@ -105,7 +113,7 @@ export default function ProductDetailPage() {
   }
 
   const isOwner = user?.id === product.owner?.id;
-  const imageUrl = product.images?.[0]?.image || 'https://via.placeholder.com/600x400';
+  const imageUrl = getImageUrl(product.images?.[0]?.image);
   const owner = product.owner;
 
   return (
@@ -139,9 +147,9 @@ export default function ProductDetailPage() {
                 {product.images.slice(1).map((img, idx) => (
                   <div key={idx} className="aspect-square bg-gray-200 rounded-lg overflow-hidden">
                     {img.video ? (
-                      <video src={img.video} className="w-full h-full object-cover" />
+                      <video src={getImageUrl(img.video)} className="w-full h-full object-cover" />
                     ) : (
-                      <img src={img.image} alt="" className="w-full h-full object-cover" />
+                      <img src={getImageUrl(img.image)} alt="" className="w-full h-full object-cover" />
                     )}
                   </div>
                 ))}

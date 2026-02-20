@@ -1,6 +1,14 @@
 import { Link } from 'react-router-dom';
 import { MapPin, Star } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL || '/api';
+
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return 'https://via.placeholder.com/300x200?text=No+Image';
+  if (imagePath.startsWith('http')) return imagePath;
+  return imagePath;
+};
+
 const conditionColors = {
   new: 'bg-green-100 text-green-800',
   like_new: 'bg-blue-100 text-blue-800',
@@ -10,7 +18,7 @@ const conditionColors = {
 };
 
 export default function ProductCard({ product }) {
-  const imageUrl = product.primary_image || 'https://via.placeholder.com/300x200?text=No+Image';
+  const imageUrl = getImageUrl(product.primary_image);
   const isSwapped = !product.is_available;
   
   return (
