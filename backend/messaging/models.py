@@ -9,6 +9,8 @@ class Conversation(models.Model):
     swap_request = models.ForeignKey('swaps.SwapRequest', on_delete=models.SET_NULL, null=True, blank=True, related_name='conversations')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    starred_by = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='starred_conversations', blank=True)
+    deleted_by = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='deleted_conversations', blank=True)
 
     class Meta:
         ordering = ['-updated_at']

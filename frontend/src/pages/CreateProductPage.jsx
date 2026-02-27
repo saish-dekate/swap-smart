@@ -85,26 +85,29 @@ export default function CreateProductPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-black text-white py-12">
-        <div className="container-custom">
+    <div className="min-h-screen bg-pattern-light">
+      <div className="bg-gradient-hero text-white py-12 relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-10 right-10 w-40 h-40 bg-blue-500/10 rounded-full blur-2xl"></div>
+        </div>
+        <div className="container-custom relative z-10">
           <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-gray-300 hover:text-white mb-4"
           >
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
-          <h1 className="text-3xl font-bold">Add New Product</h1>
+          <h1 className="text-4xl font-bold">Add New Product</h1>
           <p className="text-gray-300">List your item for swapping</p>
         </div>
       </div>
 
-      <div className="container-custom py-8">
+      <div className="container-custom py-10">
         <div className="max-w-2xl mx-auto">
-          <div className="card p-8">
+          <div className="card-glass p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium mb-1">Title</label>
+                <label className="block text-sm font-medium mb-2 text-gray-700">Title</label>
                 <input
                   type="text"
                   name="title"
@@ -117,7 +120,7 @@ export default function CreateProductPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
+                <label className="block text-sm font-medium mb-2 text-gray-700">Description</label>
                 <textarea
                   name="description"
                   value={formData.description}
@@ -130,10 +133,10 @@ export default function CreateProductPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Photos & Videos (max 5)</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                <label className="block text-sm font-medium mb-2 text-gray-700">Photos & Videos (max 5)</label>
+                <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 bg-gray-50/50">
                   {mediaPreview.length > 0 && (
-                    <div className="grid grid-cols-3 gap-2 mb-4">
+                    <div className="grid grid-cols-3 gap-3 mb-4">
                       {mediaPreview.map((item, index) => (
                         <div key={index} className="relative">
                           {item.type === 'video' ? (
@@ -166,7 +169,9 @@ export default function CreateProductPage() {
                   )}
                   {mediaFiles.length < 5 && (
                     <label className="flex flex-col items-center cursor-pointer">
-                      <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                      <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-3 shadow-lg">
+                        <Upload className="w-6 h-6 text-white" />
+                      </div>
                       <span className="text-sm text-gray-500">Click to upload photos or videos</span>
                       <input
                         type="file"
@@ -180,9 +185,9 @@ export default function CreateProductPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Category</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Category</label>
                   <select
                     name="category"
                     value={formData.category}
@@ -200,7 +205,7 @@ export default function CreateProductPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Condition</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Condition</label>
                   <select
                     name="condition"
                     value={formData.condition}
@@ -217,9 +222,9 @@ export default function CreateProductPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Estimated Value (₹)</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Estimated Value (₹)</label>
                   <input
                     type="number"
                     name="estimated_value"
@@ -234,7 +239,7 @@ export default function CreateProductPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Location</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Location</label>
                   <input
                     type="text"
                     name="location"
@@ -249,7 +254,7 @@ export default function CreateProductPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full btn btn-primary py-3"
+                className="w-full btn bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 py-4 text-lg shadow-lg shadow-blue-500/25"
               >
                 {loading ? 'Creating...' : 'Create Product'}
               </button>

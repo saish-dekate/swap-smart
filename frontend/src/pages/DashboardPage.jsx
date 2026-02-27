@@ -2,12 +2,18 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { productsAPI, swapsAPI, bidsAPI, matchingAPI } from '../api';
-import { Package, RefreshCw, DollarSign, Bell, Sparkles, Trash2, ToggleLeft, ToggleRight, MapPin, Star, MessageCircle } from 'lucide-react';
+import { Package, RefreshCw, DollarSign, Bell, Sparkles, Trash2, ToggleLeft, ToggleRight, MapPin, Star, MessageCircle, X, Check } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 const getImageUrl = (imagePath) => {
   if (!imagePath) return 'https://via.placeholder.com/300x200?text=No+Image';
+  if (imagePath.startsWith('http')) return imagePath;
+  return imagePath;
+};
+
+const getAvatarUrl = (imagePath) => {
+  if (!imagePath) return null;
   if (imagePath.startsWith('http')) return imagePath;
   return imagePath;
 };
@@ -138,6 +144,15 @@ export default function DashboardPage() {
     }
   };
 
+  const handleRejectSwap = async (swapId) => {
+    try {
+      await swapsAPI.reject(swapId);
+      loadData();
+    } catch (error) {
+      console.error('Error rejecting swap:', error);
+    }
+  };
+
   const tabs = [
     { id: 'products', label: 'My Products', icon: Package },
     { id: 'swaps', label: 'Swaps', icon: RefreshCw },
@@ -154,21 +169,35 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-black text-white py-12">
-        <div className="container-custom">
+    <div className="min-h-screen bg-pattern-light">
+      <div className="bg-gradient-hero text-white py-16 relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-10 right-10 w-40 h-40 bg-blue-500/10 rounded-full blur-2xl"></div>
+          <div className="absolute bottom-10 left-10 w-60 h-60 bg-purple-500/10 rounded-full blur-2xl"></div>
+        </div>
+        <div className="container-custom relative z-10">
           <div className="flex items-center gap-4">
-            <div className="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center">
-              <span className="text-3xl font-bold">{user?.email?.[0]?.toUpperCase()}</span>
-            </div>
+            {user?.avatar ? (
+              <img 
+                src={getAvatarUrl(user.avatar)} 
+                alt="Profile" 
+                className="w-24 h-24 rounded-full object-cover border-4 border-white/20 shadow-2xl"
+              />
+            ) : (
+              <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center border-4 border-white/20 shadow-2xl">
+                <span className="text-4xl font-bold">{user?.email?.[0]?.toUpperCase()}</span>
+              </div>
+            )}
             <div>
-              <h1 className="text-3xl font-bold">{user?.first_name} {user?.last_name}</h1>
+              <h1 className="text-4xl font-bold">{user?.first_name} {user?.last_name}</h1>
               <p className="text-gray-300">{user?.email}</p>
-              <div className="flex items-center gap-4 mt-2">
-                <span className="flex items-center gap-1">
+              <div className="flex items-center gap-6 mt-3">
+                <span className="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full backdrop-blur-sm">
                   <Bell className="w-4 h-4" /> Trust: {user?.trust_score}/10
                 </span>
-                <span>{user?.total_swaps} swaps completed</span>
+                <span className="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full backdrop-blur-sm">
+                  <RefreshCw className="w-4 h-4" /> {user?.total_swaps} swaps completed
+                </span>
               </div>
             </div>
           </div>
@@ -176,18 +205,18 @@ export default function DashboardPage() {
       </div>
 
       <div className="container-custom py-8">
-        <div className="flex gap-2 mb-6 overflow-x-auto">
+        <div className="flex gap-2 mb-8 overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all ${
                 activeTab === tab.id
-                  ? 'bg-black text-white'
-                  : 'bg-white text-gray-600 hover:bg-gray-100'
+                  ? 'bg-gradient-to-r from-black to-gray-800 text-white shadow-lg shadow-black/25'
+                  : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
               }`}
             >
-              <tab.icon className="w-4 h-4" />
+              <tab.icon className="w-5 h-5" />
               {tab.label}
             </button>
           ))}
@@ -222,8 +251,8 @@ export default function DashboardPage() {
           <>
             {activeTab === 'products' && (
               <div>
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold">My Products</h2>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold">My Products</h2>
                   <Link to="/products/create" className="btn btn-primary">
                     Add Product
                   </Link>
@@ -241,9 +270,11 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-12 bg-white rounded-lg">
-                    <Package className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                    <p className="text-gray-500">No products yet</p>
+                  <div className="text-center py-16 card-glass">
+                    <div className="w-20 h-20 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Package className="w-10 h-10 text-gray-500" />
+                    </div>
+                    <p className="text-gray-500 text-lg mb-4">No products yet</p>
                     <Link to="/products/create" className="text-black font-medium hover:underline">
                       Add your first product
                     </Link>
@@ -254,36 +285,55 @@ export default function DashboardPage() {
 
             {activeTab === 'swaps' && (
               <div>
-                <h2 className="text-xl font-semibold mb-4">Swap Requests</h2>
+                <h2 className="text-2xl font-bold mb-6">Swap Requests</h2>
                 {swaps.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="grid gap-4">
                     {swaps.map((swap) => (
-                      <div key={swap.id} className="card p-4">
+                      <div key={swap.id} className="card-glass p-6">
                         <div className="flex justify-between items-start">
-                          <div>
-                            <p className="font-medium">
-                              {swap.sender.email === user?.email
-                                ? `To: ${swap.receiver.email}`
-                                : `From: ${swap.sender.email}`}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              {swap.sender_product?.title} ↔ {swap.receiver_product?.title}
-                            </p>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                                {swap.sender.email === user?.email ? swap.receiver.email[0].toUpperCase() : swap.sender.email[0].toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="font-semibold text-lg">
+                                  {swap.sender.email === user?.email
+                                    ? `To: ${swap.receiver.email}`
+                                    : `From: ${swap.sender.email}`}
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  {swap.sender_product?.title} ↔ {swap.receiver_product?.title}
+                                </p>
+                              </div>
+                            </div>
                             {swap.cash_adjustment > 0 && (
-                              <p className="text-sm">Cash: ₹{swap.cash_adjustment}</p>
+                              <p className="text-sm bg-green-50 text-green-700 px-3 py-1 rounded-full inline-block mt-2">
+                                Cash: ₹{swap.cash_adjustment}
+                              </p>
                             )}
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-col items-end gap-3">
                             <span className={`badge ${statusColors[swap.status]}`}>
                               {swap.status}
                             </span>
                             {swap.status === 'pending' && swap.receiver.id === user?.id && (
-                              <button
-                                onClick={() => handleAcceptSwap(swap.id)}
-                                className="btn btn-primary text-sm"
-                              >
-                                Accept
-                              </button>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleRejectSwap(swap.id)}
+                                  className="flex items-center gap-1 px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg text-sm font-medium transition-colors"
+                                >
+                                  <X className="w-4 h-4" />
+                                  Reject
+                                </button>
+                                <button
+                                  onClick={() => handleAcceptSwap(swap.id)}
+                                  className="flex items-center gap-1 px-4 py-2 bg-green-100 text-green-700 hover:bg-green-200 rounded-lg text-sm font-medium transition-colors"
+                                >
+                                  <Check className="w-4 h-4" />
+                                  Accept
+                                </button>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -291,9 +341,11 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-12 bg-white rounded-lg">
-                    <RefreshCw className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                    <p className="text-gray-500">No swap requests</p>
+                  <div className="text-center py-16 card-glass">
+                    <div className="w-20 h-20 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <RefreshCw className="w-10 h-10 text-gray-500" />
+                    </div>
+                    <p className="text-gray-500 text-lg">No swap requests</p>
                   </div>
                 )}
               </div>
@@ -301,21 +353,23 @@ export default function DashboardPage() {
 
             {activeTab === 'bids' && (
               <div>
-                <h2 className="text-xl font-semibold mb-4">My Bids</h2>
+                <h2 className="text-2xl font-bold mb-6">My Bids</h2>
                 {bids.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="grid gap-4">
                     {bids.map((bid) => (
-                      <div key={bid.id} className="card p-4">
+                      <div key={bid.id} className="card-glass p-6">
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="font-medium">{bid.product?.title}</p>
+                            <p className="font-semibold text-lg">{bid.product?.title}</p>
                             {bid.offered_product && (
                               <p className="text-sm text-gray-500">
                                 Offering: {bid.offered_product.title}
                               </p>
                             )}
                             {bid.cash_offer && (
-                              <p className="text-sm">Cash: ₹{bid.cash_offer}</p>
+                              <p className="text-sm bg-green-50 text-green-700 px-3 py-1 rounded-full inline-block mt-2">
+                                Cash: ₹{bid.cash_offer}
+                              </p>
                             )}
                           </div>
                           <span className={`badge ${statusColors[bid.status]}`}>
@@ -326,9 +380,11 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-12 bg-white rounded-lg">
-                    <DollarSign className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                    <p className="text-gray-500">No bids yet</p>
+                  <div className="text-center py-16 card-glass">
+                    <div className="w-20 h-20 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <DollarSign className="w-10 h-10 text-gray-500" />
+                    </div>
+                    <p className="text-gray-500 text-lg">No bids yet</p>
                   </div>
                 )}
               </div>
@@ -336,22 +392,22 @@ export default function DashboardPage() {
 
             {activeTab === 'matches' && (
               <div>
-                <h2 className="text-xl font-semibold mb-4">Smart Matches</h2>
+                <h2 className="text-2xl font-bold mb-6">Smart Matches</h2>
                 {matches.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="grid gap-4">
                     {matches.map((match, idx) => (
-                      <div key={idx} className="card p-4">
+                      <div key={idx} className="card-glass p-6">
                         <div className="flex justify-between items-center">
                           <div>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-gray-500 mb-1">
                               Your: {match.your_product?.title}
                             </p>
-                            <p className="font-medium">
+                            <p className="font-semibold text-lg">
                               Match: {match.matched_product?.title}
                             </p>
                           </div>
-                          <div className="text-right">
-                            <p className="text-2xl font-bold text-green-600">
+                          <div className="text-center">
+                            <p className="text-4xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
                               {match.compatibility_score}%
                             </p>
                             <p className="text-sm text-gray-500">match</p>
@@ -361,9 +417,11 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-12 bg-white rounded-lg">
-                    <Sparkles className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                    <p className="text-gray-500">Add products to see smart matches</p>
+                  <div className="text-center py-16 card-glass">
+                    <div className="w-20 h-20 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Sparkles className="w-10 h-10 text-gray-500" />
+                    </div>
+                    <p className="text-gray-500 text-lg">Add products to see smart matches</p>
                   </div>
                 )}
               </div>

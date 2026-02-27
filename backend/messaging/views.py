@@ -12,9 +12,16 @@ class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.all()
 
     def get_queryset(self):
-        return Conversation.objects.filter(
-            participants=self.request.user
-        ).prefetch_related('participants', 'messages')
+        try:
+            return Conversation.objects.filter(
+                participants=self.request.user
+            ).exclude(
+                deleted_by=self.request.user
+            ).prefetch_related('participants', 'messages', 'starred_by')
+        except Exception:
+            return Conversation.objects.filter(
+                participants=self.request.user
+            ).prefetch_related('participants', 'messages')
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -43,6 +50,35 @@ class ConversationViewSet(viewsets.ModelViewSet):
             conversation.save(update_fields=['updated_at'])
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['post'], url_path='star')
+    def star(self, request, pk=None):
+        conversation = self.get_object()
+        try:
+            if request.user in conversation.starred_by.all():
+                conversation.starred_by.remove(request.user)
+                return Response({'starred': False})
+            else:
+                conversation.starred_by.add(request.user)
+                return Response({'starred': True})
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=True, methods=['post'], url_path='delete')
+    def delete_conversation(self, request, pk=None):
+        conversation = self.get_object()
+        try:
+            conversation.deleted_by.add(request.user)
+        except Exception:
+            conversation.delete()
+        return Response({'deleted': True})
+
+    @action(detail=False, methods=['get'], url_path='unread-count')
+    def unread_count(self, request):
+        total_unread = 0
+        for conv in Conversation.objects.filter(participants=request.user).prefetch_related('messages'):
+            total_unread += conv.messages.exclude(sender=request.user).filter(is_read=False).count()
+        return Response({'unread_count': total_unread})
 
 
 def create_conversation_for_swap(swap):

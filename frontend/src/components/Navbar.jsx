@@ -1,12 +1,34 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeftRight, User, LogOut, Plus, LayoutDashboard, MessageCircle, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowLeftRight, User, LogOut, Plus, LayoutDashboard, MessageCircle, Menu, X, Shield } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { messagingAPI } from '../api';
+
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return null;
+  if (imagePath.startsWith('http')) return imagePath;
+  return imagePath;
+};
 
 export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    
+    const fetchUnread = () => {
+      messagingAPI.getUnreadCount()
+        .then(res => setUnreadCount(res.data.unread_count || 0))
+        .catch(() => {});
+    };
+    
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 5000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
 
   const handleLogout = () => {
     logout();
@@ -48,10 +70,15 @@ export default function Navbar() {
                 </Link>
                 <Link
                   to="/messages"
-                  className="flex items-center gap-2 text-gray-600 hover:text-black transition-colors"
+                  className="flex items-center gap-2 text-gray-600 hover:text-black transition-colors relative"
                 >
                   <MessageCircle className="w-5 h-5" />
                   Messages
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
                 </Link>
                 <Link
                   to="/products/create"
@@ -62,9 +89,17 @@ export default function Navbar() {
                 </Link>
                 <div className="flex items-center gap-4">
                   <Link to="/profile" className="flex items-center gap-2">
-                    <div className="w-9 h-9 bg-gray-200 rounded-full flex items-center justify-center">
-                      <User className="w-5 h-5 text-gray-600" />
-                    </div>
+                    {user?.avatar ? (
+                      <img 
+                        src={getImageUrl(user.avatar)} 
+                        alt="Profile" 
+                        className="w-9 h-9 rounded-full object-cover border-2 border-gray-200"
+                      />
+                    ) : (
+                      <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                        <User className="w-5 h-5 text-white" />
+                      </div>
+                    )}
                   </Link>
                   <button
                     onClick={handleLogout}
@@ -110,11 +145,16 @@ export default function Navbar() {
                   </Link>
                   <Link
                     to="/messages"
-                    className="flex items-center gap-2 text-gray-600 hover:text-black transition-colors py-2"
+                    className="flex items-center gap-2 text-gray-600 hover:text-black transition-colors py-2 relative"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <MessageCircle className="w-5 h-5" />
                     Messages
+                    {unreadCount > 0 && (
+                      <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                        {unreadCount}
+                      </span>
+                    )}
                   </Link>
                   <Link
                     to="/products/create"

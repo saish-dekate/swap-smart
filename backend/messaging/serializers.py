@@ -16,10 +16,11 @@ class ConversationSerializer(serializers.ModelSerializer):
     participants = UserSerializer(many=True, read_only=True)
     last_message = serializers.SerializerMethodField()
     unread_count = serializers.SerializerMethodField()
+    starred_by = serializers.SerializerMethodField()
 
     class Meta:
         model = Conversation
-        fields = ['id', 'participants', 'swap_request', 'last_message', 'unread_count', 'created_at', 'updated_at']
+        fields = ['id', 'participants', 'swap_request', 'last_message', 'unread_count', 'starred_by', 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
 
     def get_last_message(self, obj):
@@ -33,6 +34,12 @@ class ConversationSerializer(serializers.ModelSerializer):
         if user:
             return obj.messages.exclude(sender=user).filter(is_read=False).count()
         return 0
+
+    def get_starred_by(self, obj):
+        user = self.context.get('request').user if self.context.get('request') else None
+        if user and user in obj.starred_by.all():
+            return [user.id]
+        return []
 
 
 class ConversationCreateSerializer(serializers.ModelSerializer):

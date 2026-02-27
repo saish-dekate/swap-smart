@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from django.conf import settings
 from .models import TrustBadge, Notification
 
 User = get_user_model()
@@ -9,6 +10,7 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     badges = serializers.SerializerMethodField()
     distance = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -24,6 +26,11 @@ class UserSerializer(serializers.ModelSerializer):
         return [badge.badge_type for badge in obj.badges.all()]
 
     def get_distance(self, obj):
+        return None
+
+    def get_avatar(self, obj):
+        if obj.avatar:
+            return f"http://localhost:8000{settings.MEDIA_URL}{obj.avatar.name}"
         return None
 
 

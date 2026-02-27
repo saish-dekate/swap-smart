@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { productsAPI } from '../api';
 import ProductCard from '../components/ProductCard';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, Package } from 'lucide-react';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
@@ -32,25 +32,29 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-black text-white py-12">
-        <div className="container-custom">
-          <h1 className="text-4xl font-bold mb-4">Browse Products</h1>
-          <p className="text-gray-300">Find the perfect item to swap</p>
+    <div className="min-h-screen bg-pattern-light">
+      <div className="bg-gradient-hero text-white py-16 relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-10 right-20 w-40 h-40 bg-blue-500/10 rounded-full blur-2xl"></div>
+          <div className="absolute bottom-10 left-20 w-60 h-60 bg-purple-500/10 rounded-full blur-2xl"></div>
+        </div>
+        <div className="container-custom relative z-10">
+          <h1 className="text-5xl font-bold mb-4">Browse Products</h1>
+          <p className="text-xl text-gray-300">Find the perfect item to swap</p>
         </div>
       </div>
 
-      <div className="container-custom py-8">
-        <div className="flex flex-col lg:flex-row gap-6">
-          <div className="w-full lg:w-64 space-y-6">
-            <div className="card p-4">
-              <h3 className="font-semibold mb-4 flex items-center gap-2">
-                <Filter className="w-4 h-4" /> Filters
+      <div className="container-custom py-10">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="w-full lg:w-72">
+            <div className="card-glass p-6 sticky top-24">
+              <h3 className="font-semibold mb-5 flex items-center gap-2 text-lg">
+                <Filter className="w-5 h-5" /> Filters
               </h3>
               
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Search</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Search</label>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
@@ -64,7 +68,7 @@ export default function ProductsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Category</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Category</label>
                   <select
                     value={filters.category}
                     onChange={(e) => handleFilterChange('category', e.target.value)}
@@ -78,7 +82,7 @@ export default function ProductsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Condition</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Condition</label>
                   <select
                     value={filters.condition}
                     onChange={(e) => handleFilterChange('condition', e.target.value)}
@@ -116,7 +120,10 @@ export default function ProductsPage() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12">
+              <div className="text-center py-16 card-glass">
+                <div className="w-20 h-20 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Package className="w-10 h-10 text-gray-500" />
+                </div>
                 <p className="text-gray-500 text-lg">No products found</p>
                 <p className="text-gray-400">Try adjusting your filters</p>
               </div>

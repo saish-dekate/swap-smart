@@ -46,12 +46,22 @@ class SwapRequestViewSet(viewsets.ModelViewSet):
         swap.save()
         
         from messaging.models import Conversation
-        conversation, created = Conversation.objects.get_or_create(
-            swap_request=swap,
-            defaults={}
-        )
-        if created:
+        
+        try:
+            conversation = Conversation.objects.create()
             conversation.participants.add(swap.sender, swap.receiver)
+            if swap:
+                conversation.swap_request = swap
+                conversation.save()
+        except Exception as e:
+            print(f"Error creating conversation: {e}")
+            conversation = None
+            try:
+                convs = Conversation.objects.filter(participants=swap.sender).filter(participants=swap.receiver)
+                if convs.exists():
+                    conversation = convs.first()
+            except Exception:
+                pass
         
         Notification.objects.create(
             user=swap.sender,
@@ -60,9 +70,11 @@ class SwapRequestViewSet(viewsets.ModelViewSet):
             message=f'{request.user.email} accepted your swap request! You can now message each other.'
         )
         
+        conversation_id = str(conversation.id) if conversation else None
+        
         return Response({
             'swap': SwapRequestSerializer(swap).data,
-            'conversation_id': str(conversation.id)
+            'conversation_id': conversation_id
         })
 
     @action(detail=True, methods=['post'])
@@ -107,6 +119,10 @@ class SwapRequestViewSet(viewsets.ModelViewSet):
         
         sender.total_swaps += 1
         receiver.total_swaps += 1
+        
+        sender.trust_score = min(10.00, float(sender.trust_score) + 0.25)
+        receiver.trust_score = min(10.00, float(receiver.trust_score) + 0.25)
+        
         sender.save()
         receiver.save()
         
@@ -114,6 +130,63 @@ class SwapRequestViewSet(viewsets.ModelViewSet):
         swap.receiver_product.is_available = False
         swap.sender_product.save()
         swap.receiver_product.save()
+        
+        from accounts.models import TrustBadge
+        
+        badge_earned = []
+        
+        badges_to_check = [
+            (1, 'quick_swapper', 'Quick Swapper'),
+            (5, 'trusted', 'Trusted'),
+            (10, 'top_trader', 'Top Trader'),
+            (25, 'top_trader', 'Elite Trader'),
+            (50, 'top_trader', 'Master Trader'),
+        ]
+        
+        for swap_count, badge_type, badge_name in badges_to_check:
+            if sender.total_swaps >= swap_count:
+                badge, created = TrustBadge.objects.get_or_create(
+                    user=sender,
+                    badge_type=badge_type,
+                    defaults={}
+                )
+                if created:
+                    badge_earned.append(badge_name)
+                    Notification.objects.create(
+                        user=sender,
+                        type='badge',
+                        title='Badge Earned!',
+                        message=f'You earned the {badge_name} badge!'
+                    )
+        
+        for swap_count, badge_type, badge_name in badges_to_check:
+            if receiver.total_swaps >= swap_count:
+                badge, created = TrustBadge.objects.get_or_create(
+                    user=receiver,
+                    badge_type=badge_type,
+                    defaults={}
+                )
+                if created:
+                    badge_earned.append(badge_name)
+                    Notification.objects.create(
+                        user=receiver,
+                        type='badge',
+                        title='Badge Earned!',
+                        message=f'You earned the {badge_name} badge!'
+                    )
+        
+        Notification.objects.create(
+            user=sender,
+            type='swap_completed',
+            title='Swap Completed',
+            message=f'Your swap with {receiver.email} is complete! Trust score increased.'
+        )
+        Notification.objects.create(
+            user=receiver,
+            type='swap_completed',
+            title='Swap Completed',
+            message=f'Your swap with {sender.email} is complete! Trust score increased.'
+        )
         
         return Response(SwapRequestSerializer(swap).data)
 

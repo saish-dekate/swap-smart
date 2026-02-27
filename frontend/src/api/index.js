@@ -112,6 +112,9 @@ export const messagingAPI = {
   listConversations: () => api.get('/messages/'),
   getMessages: (conversationId) => api.get(`/messages/${conversationId}/messages/`),
   sendMessage: (conversationId, data) => api.post(`/messages/${conversationId}/send/`, data),
+  getUnreadCount: () => api.get('/messages/unread-count/'),
+  starConversation: (conversationId) => api.post(`/messages/${conversationId}/star/`),
+  deleteConversation: (conversationId) => api.post(`/messages/${conversationId}/delete/`),
 };
 
 export default api;
